@@ -28,10 +28,39 @@
 <input type="text" name="name" value="<%=product.getName()%>">
 </td>
 </tr>
+<tr>
 <td height="21" align="center">상품가격</td>
 <td align = "left">
+<input type="text" name = "price" size="20" value="<%=product.getPrice() %>">원</td>
+</tr>
+
+<tr>
+<td align="center">상품 내용</td>
+<td><textarea rows="10" cols="45" name="detail"><%=product.getDetail() %> </textarea></td>
+</tr>
+<tr>
+<td align="center">상품입고수량</td>
+<td align="left">
+<input type="text" name="stock" size="10" value="<%=product.getStock()%>">개</td>
+</tr>
+
+<tr>
+<td align="center">상품이미지</td>
+<td align="left"><img src="../data/<%=product.getImage() %>">
+<input type="file" name="image"></td>
+</tr>
+
+<tr>
+<td colspan="2" align="center">
+<input type="submit" value="제품수정">&nbsp;&nbsp;&nbsp;
+<input type="reset" value="다시쓰기">
+</td>
+</tr>
 </table>
+<input type="hidden" name="no" value="<%= product.getNo()%>">
+</form>
 </td>
 </table>
+<%@ include file="../Bottom.jsp" %>
 </body>
 </html>

@@ -9,7 +9,7 @@ create table shop_product(
 	image	varchar(20)	NULL,
 	PRIMARY KEY(no)	);
 	
-/* 상품테이블 */	
+/* 상품 주문 테이블 */	
 create table shop_order(
 	no 	int(5)	NOT NULL auto_increment,
 	product_no varchar(5)	NOT NULL	,

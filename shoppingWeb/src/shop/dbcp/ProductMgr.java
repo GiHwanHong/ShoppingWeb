@@ -9,63 +9,65 @@ import java.sql.*;
 import java.util.Vector;
 
 public class ProductMgr {
-	private DBConnectionMgr pool=null;
-	
+	private DBConnectionMgr pool = null;
+
 	public ProductMgr() {
 		try {
 			pool = DBConnectionMgr.getInstance();
 		} catch (Exception e) {
 			System.out.println("Error : 커넥션 가져오기 실패!!");
 		}
-	
+
 	}
-	
+
 	public boolean insertProduct(HttpServletRequest req) {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		boolean res = false;
 
 		try {
-			String uploadDir = "/Users/****/eclipse_workspace/shoppingWeb/WebContent";
-			MultipartRequest multi = new MultipartRequest(req,uploadDir,5*1024*1024,"euc-kr",new DefaultFileRenamePolicy());
+			String uploadDir = "/Users/Gihwan/eclipse_workspace/shoppingWeb/WebContent";
+			MultipartRequest multi = new MultipartRequest(req, uploadDir, 5 * 1024 * 1024, "euc-kr",
+					new DefaultFileRenamePolicy());
 			con = pool.getConnection();
-			String query= "insert into shop_product(name, price,detail,date , stock , image)"
+			String query = "insert into shop_product(name, price,detail,date , stock , image)"
 					+ "values(?,?,?,now(),?,?)";
 			pstmt = con.prepareStatement(query);
 			pstmt.setString(1, multi.getParameter("name"));
 			pstmt.setString(2, multi.getParameter("price"));
 			pstmt.setString(3, multi.getParameter("detail"));
 			pstmt.setString(4, multi.getParameter("stock"));
-			
-			if(multi.getFilesystemName("image") == null) {
+
+			if (multi.getFilesystemName("image") == null) {
 				pstmt.setString(5, "ready.gif");
 			} else {
 				pstmt.setString(5, multi.getFilesystemName("image"));
 			}
 			int count = pstmt.executeUpdate();
-			if( count ==	1) res = true;
-			
+			if (count == 1)
+				res = true;
+
 		} catch (Exception ex) {
 			System.out.println("Exception : " + ex);
-		
-		}finally {
-			pool.freeConnection(con,pstmt);
+
+		} finally {
+			pool.freeConnection(con, pstmt);
 		}
 		return res;
 	}
-	
-	public Vector getProductList() throws SQLException{
+
+	public Vector getProductList() throws SQLException {
 		Connection con = null;
 		Statement stmt = null;
 		ResultSet rs = null;
 		Vector vProduct = new Vector();
-		
+
 		try {
 			con = pool.getConnection();
 			String query = "select * from shop_product order by no desc";
 			stmt = con.createStatement();
 			rs = stmt.executeQuery(query);
-			
+
 			while (rs.next()) {
 				ProductBean product = new ProductBean();
 				product.setNo(rs.getInt("no"));
@@ -80,24 +82,25 @@ public class ProductMgr {
 		} catch (Exception ex) {
 			System.out.println("Exception : " + ex);
 		} finally {
-			pool.freeConnection(con,stmt,rs);
+			pool.freeConnection(con, stmt, rs);
 		}
 		return vProduct;
 	}
+
 	public ProductBean getProduct(String no) {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		ProductBean product = null;
-		
+
 		try {
 			con = pool.getConnection();
 			String query = "select * from shop_product where no=?";
-			pstmt=con.prepareStatement(query);
+			pstmt = con.prepareStatement(query);
 			pstmt.setString(1, no);
 			rs = pstmt.executeQuery();
-			
-			if(rs.next()) {
+
+			if (rs.next()) {
 				product = new ProductBean();
 				product.setNo(rs.getInt("no"));
 				product.setName(rs.getString("name"));
@@ -109,17 +112,74 @@ public class ProductMgr {
 			}
 		} catch (Exception ex) {
 			System.out.println("Exception : " + ex);
-		}finally {
-			pool.freeConnection(con, pstmt,rs);
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
 		}
 		return product;
 	}
+
+	// 상품 업데이트 하기!
+	public boolean updateProduct(HttpServletRequest req) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		boolean res = false;
+		String uploadDir = "/Users/Gihwan/eclipse_workspace/shoppingWeb/WebContent"; // 경로
+
+		try {
+			con = pool.getConnection();
+			MultipartRequest multi = new MultipartRequest(req, uploadDir, 5 * 1024 * 1024, "euc-kr",
+					new DefaultFileRenamePolicy());
+
+			if (multi.getFilesystemName("image") == null) {
+				String query = "update shop_product set name = ?, price = ?, detail = ? , stock = ? where no = ?";
+				pstmt = con.prepareStatement(query);
+				pstmt.setString(1, multi.getParameter("name"));
+				pstmt.setString(2, multi.getParameter("price"));
+				pstmt.setString(3, multi.getParameter("detail"));
+				pstmt.setString(4, multi.getParameter("stock"));
+				pstmt.setString(5, multi.getParameter("no"));
+			} else {
+				String query = "update shop_product set name = ?, price = ? , detail = ?, stock = ?, image= ? where no = ?";
+				pstmt = con.prepareStatement(query);
+				pstmt.setString(1, multi.getParameter("name"));
+				pstmt.setString(2, multi.getParameter("price"));
+				pstmt.setString(3, multi.getParameter("detail"));
+				pstmt.setString(4, multi.getParameter("stock"));
+				pstmt.setString(5, multi.getFilesystemName("image"));
+				pstmt.setString(6, multi.getParameter("no"));
+			}
+			int count = pstmt.executeUpdate();
+			if (count == 1)
+				res = true;
+
+		} catch (Exception ex) {
+			System.out.println("Exception : " + ex);
+		} finally {
+			pool.freeConnection(con, pstmt);
+		}
+		return res;
+	}
+
+	// 상품 삭제하기
+	public boolean deleteProduct(String no) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		boolean res = false;
+
+		try {
+			con = pool.getConnection();
+			String query = "delete from shop_product where no = ?";
+			pstmt = con.prepareStatement(query);
+			pstmt.setString(1, no);
+			int count = pstmt.executeUpdate();
+			if (count == 1)
+				res = true;
+
+		} catch (Exception ex) {
+			System.out.println("Exception : " + ex);
+		} finally {
+			pool.freeConnection(con, pstmt);
+		}
+		return res;
+	}
 }
-
-
-
-
-
-
-
-
